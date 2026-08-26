@@ -29,9 +29,9 @@ function walk(dir: string, ext: string): string[] {
 }
 
 const STAGE_FILES = [
-  "stages/construction/blocks-local-dev.md",
-  "stages/operation/blocks-sandbox-deploy.md",
-  "stages/operation/blocks-production-deploy.md",
+  "stages/construction/aws-blocks-local-dev.md",
+  "stages/operation/aws-blocks-sandbox-deploy.md",
+  "stages/operation/aws-blocks-production-deploy.md",
 ];
 const OVERLAY_FILES = [
   "contributions/inception/domain-design.md",
@@ -107,7 +107,7 @@ describe("stage graph consistency", () => {
     const slugs = stages.map((s) => s.slug);
     expect(new Set(slugs).size).toBe(3);
     expect(slugs.sort()).toEqual(
-      ["blocks-local-dev", "blocks-production-deploy", "blocks-sandbox-deploy"],
+      ["aws-blocks-local-dev", "aws-blocks-production-deploy", "aws-blocks-sandbox-deploy"],
     );
   });
 
@@ -154,7 +154,7 @@ describe("scope", () => {
   it("scope routing text names the real stage slugs", () => {
     const { fm, body } = readFrontmatter(SCOPE_FILE);
     expect(fm.name).toBe("aws-blocks-fullstack");
-    for (const slug of ["blocks-local-dev", "blocks-sandbox-deploy", "blocks-production-deploy"]) {
+    for (const slug of ["aws-blocks-local-dev", "aws-blocks-sandbox-deploy", "aws-blocks-production-deploy"]) {
       expect(body).toContain(slug);
     }
   });
@@ -220,7 +220,8 @@ describe("agent", () => {
     const stem = basename(AGENT_FILE, extname(AGENT_FILE));
     expect(fm.name).toBe(stem);
     expect(fm.plugin).toBe("aws-blocks");
-    expect(fm.tier).toBe("judgment");
+    expect(typeof fm.display_name).toBe("string");
+    expect(fm.display_name.length).toBeGreaterThan(0);
   });
 
   it("knowledge directory matches the agent name and holds both docs", () => {
@@ -235,25 +236,27 @@ describe("agent", () => {
 // --- sensor manifest references an existing tool script --------------------
 
 describe("sensor", () => {
-  it("declares id/trigger/stages and points at an existing tool script", () => {
+  it("declares the real v2 sensor schema and its command points at an existing tool", () => {
     const { fm } = readFrontmatter(SENSOR_FILE);
     expect(fm.id).toBe("blocks-local-health");
-    expect(fm.trigger).toBe("stage-entry");
-    expect(Array.isArray(fm.stages)).toBe(true);
-    expect(fm.stages).toContain("blocks-local-dev");
-    expect(typeof fm.tool).toBe("string");
-    expect(existsSync(resolve(ROOT, "tools", fm.tool))).toBe(true);
+    expect(fm.kind).toBe("deterministic");
+    expect(typeof fm.default_severity).toBe("string");
+    expect(typeof fm.category).toBe("string");
+    expect(typeof fm.matches).toBe("string");
+    // command: "bun {{HARNESS_DIR}}/tools/<script>.ts" — the referenced script must exist
+    expect(typeof fm.command).toBe("string");
+    const m = fm.command.match(/tools\/([\w.-]+\.ts)/);
+    expect(m).not.toBeNull();
+    expect(existsSync(resolve(ROOT, "tools", m![1]))).toBe(true);
   });
 
-  it("stages listed by the sensor are real stage slugs or the core build-and-test target", () => {
+  it("is bound to a real stage via that stage's sensors list", () => {
+    // Sensors bind through the stage's `sensors:` frontmatter, not a manifest field.
     const { fm } = readFrontmatter(SENSOR_FILE);
-    const known = new Set([
-      "blocks-local-dev",
-      "blocks-sandbox-deploy",
-      "blocks-production-deploy",
-      "build-and-test",
-    ]);
-    for (const st of fm.stages) expect(known.has(st)).toBe(true);
+    const boundBy = STAGE_FILES.filter((f) =>
+      (readFrontmatter(f).fm.sensors ?? []).includes(fm.id),
+    );
+    expect(boundBy.length).toBeGreaterThan(0);
   });
 });
 

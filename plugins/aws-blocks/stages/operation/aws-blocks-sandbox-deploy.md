@@ -1,5 +1,5 @@
 ---
-slug: blocks-sandbox-deploy
+slug: aws-blocks-sandbox-deploy
 name: Sandbox Deployment (AWS Blocks)
 plugin: aws-blocks
 phase: operation
@@ -10,7 +10,7 @@ mode: inline
 scopes:
   - aws-blocks-fullstack
 requires_stage:
-  - blocks-local-dev
+  - aws-blocks-local-dev
 produces:
   - aws-blocks-sandbox-url
 consumes:
@@ -58,11 +58,11 @@ Run the test suite against the sandbox URL. Verify:
 ### Step 4: Gate — sandbox acceptance
 
 Human approves sandbox behavior. If issues found, iterate locally
-(`blocks-local-dev`) and re-deploy (`npm run sandbox` hot-swaps in seconds).
+(`aws-blocks-local-dev`) and re-deploy (`npm run sandbox` hot-swaps in seconds).
 
 ### Step 5: Cleanup or promote
 
-- If promoting to production: proceed to `blocks-production-deploy`.
+- If promoting to production: proceed to `aws-blocks-production-deploy`.
 - If done testing: `npm run sandbox:destroy` to avoid lingering cost.
 
 ## Produces

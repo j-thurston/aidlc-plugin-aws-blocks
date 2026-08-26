@@ -27,12 +27,12 @@ Run `/aidlc --doctor` after installing to confirm the `aws-blocks` checks pass.
 | Kind | Item | Purpose |
 |---|---|---|
 | Scope | `aws-blocks-fullstack` | Opt-in scope that routes the three Blocks stages on-path |
-| Stage (construction) | `blocks-local-dev` | Scaffold + iterate locally with `npm run dev` |
-| Stage (operation) | `blocks-sandbox-deploy` | Ephemeral AWS deploy to test against real services |
-| Stage (operation) | `blocks-production-deploy` | Gated production deployment |
+| Stage (construction) | `aws-blocks-local-dev` | Scaffold + iterate locally with `npm run dev` |
+| Stage (operation) | `aws-blocks-sandbox-deploy` | Ephemeral AWS deploy to test against real services |
+| Stage (operation) | `aws-blocks-production-deploy` | Gated production deployment |
 | Overlay | `domain-design` | Adds Block Architecture Selection to the core Domain Design stage |
 | Overlay | `build-and-test` | Adds local integration verification to the core Build-and-Test stage |
-| Agent | `aws-blocks-developer-agent` | Blocks-expert developer persona (`tier: judgment`) |
+| Agent | `aws-blocks-developer-agent` | Blocks-expert developer persona |
 | Knowledge | `blocks-catalog.md`, `local-to-cloud-mapping.md` | Block reference + local/cloud behavior |
 | Sensor | `blocks-local-health` | Verifies the local Blocks env on stage entry |
 | Tools | `aidlc-blocks-local-health.ts`, `aws-blocks-doctor.ts` | Sensor + `--doctor` checks |
@@ -42,15 +42,15 @@ Run `/aidlc --doctor` after installing to confirm the `aws-blocks` checks pass.
 ```text
 Inception ── Domain Design ──(overlay: Block Architecture Selection)
                     │
-Construction ── blocks-local-dev ──(sensor: blocks-local-health)
+Construction ── aws-blocks-local-dev ──(sensor: blocks-local-health)
                     │                 Build-and-Test ──(overlay: local integration verify)
                     ▼
-Operation ── blocks-sandbox-deploy ── blocks-production-deploy
+Operation ── aws-blocks-sandbox-deploy ── aws-blocks-production-deploy
              (real-service testing)   (gated prod deploy)
 ```
 
 The three Blocks stages chain via `requires_stage`:
-`blocks-local-dev → blocks-sandbox-deploy → blocks-production-deploy`.
+`aws-blocks-local-dev → aws-blocks-sandbox-deploy → aws-blocks-production-deploy`.
 
 ## Installation (per harness)
 

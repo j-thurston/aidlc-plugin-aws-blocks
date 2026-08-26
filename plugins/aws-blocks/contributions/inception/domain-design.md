@@ -38,4 +38,4 @@ If the CDK layer is needed (resources without a Block), document those in
 a **CDK Extensions** subsection referencing `aws-blocks/index.cdk.ts`.
 
 The result of this step is the `aws-blocks-block-selection` artifact, consumed
-by the `blocks-local-dev` stage when authoring the IFC layer.
+by the `aws-blocks-local-dev` stage when authoring the IFC layer.

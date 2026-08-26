@@ -1,10 +1,12 @@
 ---
 name: aws-blocks-developer-agent
+display_name: AWS Blocks Developer Agent
 plugin: aws-blocks
-tier: judgment
 description: >
   An AWS Blocks-specialized developer who thinks in Blocks, writes
   type-safe TypeScript APIs, and iterates locally before touching the cloud.
+disallowedTools: Task
+model: sonnet
 ---
 
 ## Persona

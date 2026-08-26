@@ -1,5 +1,5 @@
 ---
-slug: blocks-production-deploy
+slug: aws-blocks-production-deploy
 name: Production Deployment (AWS Blocks)
 plugin: aws-blocks
 phase: operation
@@ -10,7 +10,7 @@ mode: inline
 scopes:
   - aws-blocks-fullstack
 requires_stage:
-  - blocks-sandbox-deploy
+  - aws-blocks-sandbox-deploy
 produces:
   - aws-blocks-production-url
 consumes:

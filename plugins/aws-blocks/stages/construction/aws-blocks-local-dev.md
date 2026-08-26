@@ -1,5 +1,5 @@
 ---
-slug: blocks-local-dev
+slug: aws-blocks-local-dev
 name: Local Development (AWS Blocks)
 plugin: aws-blocks
 phase: construction

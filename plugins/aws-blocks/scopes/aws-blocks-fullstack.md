@@ -24,9 +24,9 @@ Select this scope when building a full-stack application that should:
 
 This scope puts the following stages on-path:
 
-- **blocks-local-dev** (Construction): scaffold + iterate locally
-- **blocks-sandbox-deploy** (Operation): ephemeral AWS deploy for real-service testing
-- **blocks-production-deploy** (Operation): final production deployment
+- **aws-blocks-local-dev** (Construction): scaffold + iterate locally
+- **aws-blocks-sandbox-deploy** (Operation): ephemeral AWS deploy for real-service testing
+- **aws-blocks-production-deploy** (Operation): final production deployment
 
 The scope also activates the plugin's contribution overlays on the core
 `domain-design` (Inception) and `build-and-test` (Construction) stages, so
