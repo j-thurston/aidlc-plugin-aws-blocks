@@ -54,22 +54,40 @@ The three Blocks stages chain via `requires_stage`:
 
 ## Installation (per harness)
 
-Once packaged (`bun scripts/package.ts` in the AI-DLC repo), install per harness:
+The plugin source lives in `plugins/aws-blocks/` (the manifest `name` must equal
+the plugin's directory basename, so the tree sits in a dir literally named
+`aws-blocks`). Build a host projection with the AI-DLC standalone plugin tools
+(from a checkout of `awslabs/aidlc-workflows`, `v2` branch):
 
 ```bash
-# Claude Code
-/plugin marketplace add <repo>/dist/plugins/aws-blocks/claude
-/plugin install aidlc-aws-blocks@aidlc-plugins
+TOOLS="<aidlc-workflows>/core/tools"
+PLUGIN="$(pwd)/plugins/aws-blocks"
 
-# Kiro CLI (folder-drop)
-PLUGIN_ROOT="$(pwd)/dist/plugins/aws-blocks/kiro"
+bun "$TOOLS/aidlc-plugin-validate.ts" "$PLUGIN"      # offline lint (0 errors)
+bun "$TOOLS/aidlc-plugin-build.ts"    "$PLUGIN" kiro  # → plugins/aws-blocks/dist/kiro/
+```
+
+Valid `<harness>` values: `claude`, `codex`, `kiro`, `kiro-ide`, `cursor`,
+`opencode`, `copilot`. Then install per harness (the emitted `dist/<harness>/`
+is the installable host plugin):
+
+```bash
+# Kiro (no store — folder-drop + compose)
+PLUGIN_ROOT="$(pwd)/plugins/aws-blocks/dist/kiro"
 cp -r "$PLUGIN_ROOT"/. <project>/
 AIDLC_PLUGIN_ROOT="$PLUGIN_ROOT" AIDLC_PROJECT_DIR="<project>" \
   AIDLC_HARNESS_DIR=.kiro aidlc plugin sync
+# fallback when the aidlc CLI is not on PATH:
+AIDLC_PLUGIN_ROOT="$PLUGIN_ROOT" AIDLC_PROJECT_DIR="<project>" \
+  AIDLC_HARNESS_DIR=.kiro bun "$PLUGIN_ROOT/hooks/compose.ts"
 
-# Codex CLI
-codex plugin marketplace add <repo>/dist/plugins/aws-blocks/codex
-codex plugin add aidlc-aws-blocks@aidlc-plugins
+# Claude Code (host store)
+/plugin marketplace add <repo>/plugins/aws-blocks/dist/claude
+/plugin install aidlc-aws-blocks@aidlc-plugins
+
+# Codex CLI (host store, in a git repo)
+codex plugin marketplace add <repo>/plugins/aws-blocks/dist/codex
+codex plugin add aidlc-aws-blocks@aidlc-plugins   # approve the one-time hook trust
 ```
 
 Then verify:
@@ -88,18 +106,18 @@ Select the scope to put the Blocks stages on-path:
 /aidlc --scope aws-blocks-fullstack
 ```
 
-The workflow then routes through Block selection (during Design), local
-development, sandbox testing, and production deployment. Because the scope is
-opt-in (`freeform_default: false`), projects that don't use Blocks see no
-change. With the plugin enabled, the Domain Design overlay surfaces Block
-selection even on non-Blocks scopes.
+The workflow then routes through Block selection (during Domain Design), local
+development, sandbox testing, and production deployment. The `aws-blocks-fullstack`
+scope is opt-in (`skeleton: off`, `runner: true`) — projects that don't select it
+see no change. With the plugin enabled, the Domain Design overlay surfaces Block
+selection during that stage.
 
 ## Development
 
 ```bash
 bun install       # install dev deps (@types/node, bun-types, typescript, yaml)
-bun run typecheck # tsc --noEmit over tools/
-bun test          # content-validation suite (tests/plugin-content.test.ts)
+bun run typecheck # tsc --noEmit over plugins/aws-blocks/tools/
+bun test          # content-validation suite (plugins/aws-blocks/tests/)
 bun run doctor    # run the plugin doctor checks
 bun run health    # run the local-health sensor check
 ```

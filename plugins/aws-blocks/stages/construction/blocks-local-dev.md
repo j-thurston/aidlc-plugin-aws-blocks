@@ -1,12 +1,14 @@
 ---
 slug: blocks-local-dev
 name: Local Development (AWS Blocks)
-phase: construction
 plugin: aws-blocks
-number: 0
+phase: construction
+execution: ALWAYS
+condition: Always runs under the aws-blocks-fullstack scope — scaffold and iterate the app locally with AWS Blocks before any cloud deploy.
 lead_agent: aws-blocks-developer-agent
-topology: inline
-scopes: [aws-blocks-fullstack]
+mode: inline
+scopes:
+  - aws-blocks-fullstack
 produces:
   - aws-blocks-local-app
   - aws-blocks-ifc-layer
@@ -19,6 +21,8 @@ consumes:
     required: false
 sensors:
   - blocks-local-health
+inputs: aws-blocks-block-selection.md (from the Domain Design overlay), domain-design components.md, user-stories stories.md (if produced)
+outputs: aws-blocks/index.ts (the IFC layer) and a running local app verified via npm run dev (under this stage's record dir, engine-resolved)
 ---
 
 ## Purpose

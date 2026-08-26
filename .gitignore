@@ -6,3 +6,4 @@ dist/
 .kiro/
 Build Plan - AWS Blocks Plugin.md
 AWS Blocks Plugin Sketch.md
+plugins/aws-blocks/dist/

@@ -12,5 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["tools/**/*.ts", "tests/**/*.ts"]
+  "include": ["plugins/aws-blocks/tools/**/*.ts", "plugins/aws-blocks/tests/**/*.ts"],
+  "exclude": ["**/dist/**", "node_modules"]
 }

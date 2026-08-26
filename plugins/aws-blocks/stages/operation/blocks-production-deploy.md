@@ -1,18 +1,23 @@
 ---
 slug: blocks-production-deploy
 name: Production Deployment (AWS Blocks)
-phase: operation
 plugin: aws-blocks
-number: 0
+phase: operation
+execution: CONDITIONAL
+condition: Execute when the aws-blocks-fullstack scope is active and the sandbox-validated app is approved for promotion to production.
 lead_agent: aws-blocks-developer-agent
-topology: inline
-scopes: [aws-blocks-fullstack]
-requires_stage: blocks-sandbox-deploy
+mode: inline
+scopes:
+  - aws-blocks-fullstack
+requires_stage:
+  - blocks-sandbox-deploy
 produces:
   - aws-blocks-production-url
 consumes:
   - artifact: aws-blocks-sandbox-url
     required: true
+inputs: aws-blocks-sandbox-url (the sandbox-validated deployment) and the aws-blocks/index.ts IFC layer (+ optional index.cdk.ts)
+outputs: aws-blocks-production-url.md — the live, verified production endpoint (under this stage's record dir, engine-resolved)
 ---
 
 ## Purpose

@@ -76,11 +76,23 @@ describe("frontmatter validity", () => {
   }
 
   for (const f of STAGE_FILES) {
-    it(`${f} declares slug, phase, plugin`, () => {
+    it(`${f} declares the required v2 schema fields`, () => {
       const { fm } = readFrontmatter(f);
       expect(typeof fm.slug).toBe("string");
       expect(["construction", "operation"]).toContain(fm.phase);
       expect(fm.plugin).toBe("aws-blocks");
+      expect(["ALWAYS", "CONDITIONAL"]).toContain(fm.execution);
+      expect(typeof fm.condition).toBe("string");
+      expect(fm.condition.length).toBeGreaterThan(0);
+      expect(["inline", "subagent", "pipeline", "mob", "agent-team"]).toContain(fm.mode);
+      expect(typeof fm.inputs).toBe("string");
+      expect(typeof fm.outputs).toBe("string");
+      // `number` is engine-assigned; if authored it must be <phase>.<index>
+      if (fm.number !== undefined) {
+        expect(String(fm.number)).toMatch(/^\d+\.\d+$/);
+      }
+      // legacy fields must be gone
+      expect(fm.topology).toBeUndefined();
     });
   }
 });
@@ -99,10 +111,14 @@ describe("stage graph consistency", () => {
     );
   });
 
-  it("requires_stage references resolve to real stages", () => {
+  it("requires_stage references resolve to plugin or core stages", () => {
     for (const s of stages) {
-      if (s.requires_stage) {
-        expect(bySlug.has(s.requires_stage)).toBe(true);
+      if (!s.requires_stage) continue;
+      const reqs = Array.isArray(s.requires_stage)
+        ? s.requires_stage
+        : [s.requires_stage];
+      for (const r of reqs) {
+        expect(bySlug.has(r) || CORE_STAGE_SLUGS.has(r)).toBe(true);
       }
     }
   });

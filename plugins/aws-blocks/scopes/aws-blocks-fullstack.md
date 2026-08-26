@@ -1,12 +1,15 @@
 ---
 name: aws-blocks-fullstack
 plugin: aws-blocks
-display_name: "AWS Blocks Full-Stack"
-description: >
-  Full-stack TypeScript application using AWS Blocks for local-first
-  development. Routes through Block selection, local dev, sandbox testing,
-  and production deployment.
-freeform_default: false
+depth: Standard
+keywords:
+  - aws blocks
+  - blocks
+  - local-first
+  - full-stack typescript
+description: Full-stack TypeScript app built local-first with AWS Blocks, promoted to sandbox then production.
+skeleton: off
+runner: true
 ---
 
 ## When to use

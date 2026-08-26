@@ -1,18 +1,23 @@
 ---
 slug: blocks-sandbox-deploy
 name: Sandbox Deployment (AWS Blocks)
-phase: operation
 plugin: aws-blocks
-number: 0
+phase: operation
+execution: CONDITIONAL
+condition: Execute when the aws-blocks-fullstack scope is active and the developer chooses to validate the local app against real AWS services before production.
 lead_agent: aws-blocks-developer-agent
-topology: inline
-scopes: [aws-blocks-fullstack]
-requires_stage: blocks-local-dev
+mode: inline
+scopes:
+  - aws-blocks-fullstack
+requires_stage:
+  - blocks-local-dev
 produces:
   - aws-blocks-sandbox-url
 consumes:
   - artifact: aws-blocks-local-app
     required: true
+inputs: aws-blocks-local-app (the verified local app + aws-blocks/index.ts IFC layer)
+outputs: aws-blocks-sandbox-url.md — the live ephemeral sandbox endpoint, validated against real AWS services (under this stage's record dir, engine-resolved)
 ---
 
 ## Purpose

@@ -7,9 +7,9 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "doctor": "bun run tools/aws-blocks-doctor.ts",
-    "health": "bun run tools/aidlc-blocks-local-health.ts"
+    "test": "bun test plugins/aws-blocks/tests",
+    "doctor": "bun run plugins/aws-blocks/tools/aws-blocks-doctor.ts",
+    "health": "bun run plugins/aws-blocks/tools/aidlc-blocks-local-health.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
