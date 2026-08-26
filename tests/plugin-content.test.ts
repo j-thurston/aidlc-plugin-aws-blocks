@@ -1,0 +1,219 @@
+import { describe, it, expect } from "bun:test";
+import { readFileSync, existsSync, readdirSync } from "fs";
+import { resolve, dirname, basename, extname } from "path";
+import { fileURLToPath } from "url";
+import { parse as parseYaml } from "yaml";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+// --- helpers ---------------------------------------------------------------
+
+function readFrontmatter(relPath: string): { fm: any; body: string } {
+  const abs = resolve(ROOT, relPath);
+  const text = readFileSync(abs, "utf-8");
+  const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!m) throw new Error(`No YAML frontmatter in ${relPath}`);
+  return { fm: parseYaml(m[1]), body: m[2] };
+}
+
+function walk(dir: string, ext: string): string[] {
+  const abs = resolve(ROOT, dir);
+  if (!existsSync(abs)) return [];
+  const out: string[] = [];
+  for (const entry of readdirSync(abs, { withFileTypes: true })) {
+    const rel = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) out.push(...walk(rel, ext));
+    else if (entry.name.endsWith(ext)) out.push(rel);
+  }
+  return out;
+}
+
+const STAGE_FILES = [
+  "stages/construction/blocks-local-dev.md",
+  "stages/operation/blocks-sandbox-deploy.md",
+  "stages/operation/blocks-production-deploy.md",
+];
+const OVERLAY_FILES = [
+  "contributions/inception/solution-design.md",
+  "contributions/construction/build-and-test.md",
+];
+const SCOPE_FILE = "scopes/aws-blocks-fullstack.md";
+const AGENT_FILE = "agents/aws-blocks-developer-agent.md";
+const SENSOR_FILE = "sensors/aidlc-blocks-local-health.md";
+
+// --- manifest --------------------------------------------------------------
+
+describe("manifest", () => {
+  it("plugin.json is valid JSON with required fields", () => {
+    const m = JSON.parse(readFileSync(resolve(ROOT, ".aidlc-plugin/plugin.json"), "utf-8"));
+    expect(m.name).toBe("aws-blocks");
+    expect(typeof m.version).toBe("string");
+    expect(Array.isArray(m.dependencies)).toBe(true);
+    expect(m.dependencies).toContain("core");
+    expect(m.aidlc?.contributes).toBeDefined();
+    for (const key of ["stages", "agents", "scopes", "sensors", "knowledge", "tools", "overlays"]) {
+      expect(typeof m.aidlc.contributes[key]).toBe("string");
+    }
+  });
+
+  it("marketplace.json is valid JSON listing the plugin", () => {
+    const m = JSON.parse(readFileSync(resolve(ROOT, "marketplace.json"), "utf-8"));
+    expect(Array.isArray(m.plugins)).toBe(true);
+    expect(m.plugins.some((p: any) => p.name === "aws-blocks")).toBe(true);
+  });
+});
+
+// --- frontmatter validity --------------------------------------------------
+
+describe("frontmatter validity", () => {
+  const all = [...STAGE_FILES, ...OVERLAY_FILES, SCOPE_FILE, AGENT_FILE, SENSOR_FILE];
+  for (const f of all) {
+    it(`${f} has parseable YAML frontmatter`, () => {
+      const { fm } = readFrontmatter(f);
+      expect(fm).toBeTruthy();
+      expect(typeof fm).toBe("object");
+    });
+  }
+
+  for (const f of STAGE_FILES) {
+    it(`${f} declares slug, phase, plugin`, () => {
+      const { fm } = readFrontmatter(f);
+      expect(typeof fm.slug).toBe("string");
+      expect(["construction", "operation"]).toContain(fm.phase);
+      expect(fm.plugin).toBe("aws-blocks");
+    });
+  }
+});
+
+// --- slug / artifact consistency -------------------------------------------
+
+describe("stage graph consistency", () => {
+  const stages = STAGE_FILES.map((f) => readFrontmatter(f).fm);
+  const bySlug = new Map(stages.map((s) => [s.slug, s]));
+
+  it("all three expected stage slugs are present and unique", () => {
+    const slugs = stages.map((s) => s.slug);
+    expect(new Set(slugs).size).toBe(3);
+    expect(slugs.sort()).toEqual(
+      ["blocks-local-dev", "blocks-production-deploy", "blocks-sandbox-deploy"],
+    );
+  });
+
+  it("requires_stage references resolve to real stages", () => {
+    for (const s of stages) {
+      if (s.requires_stage) {
+        expect(bySlug.has(s.requires_stage)).toBe(true);
+      }
+    }
+  });
+
+  it("consumed aws-blocks artifacts are produced by an earlier stage", () => {
+    const produced = new Set<string>();
+    for (const s of stages) for (const p of s.produces ?? []) produced.add(p);
+    for (const s of stages) {
+      for (const c of s.consumes ?? []) {
+        if (typeof c.artifact === "string" && c.artifact.startsWith("aws-blocks-")) {
+          expect(produced.has(c.artifact)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("every stage carries the aws-blocks-fullstack scope", () => {
+    for (const s of stages) {
+      expect(s.scopes ?? []).toContain("aws-blocks-fullstack");
+    }
+  });
+});
+
+// --- scope references valid stage slugs ------------------------------------
+
+describe("scope", () => {
+  it("scope routing text names the real stage slugs", () => {
+    const { fm, body } = readFrontmatter(SCOPE_FILE);
+    expect(fm.name).toBe("aws-blocks-fullstack");
+    for (const slug of ["blocks-local-dev", "blocks-sandbox-deploy", "blocks-production-deploy"]) {
+      expect(body).toContain(slug);
+    }
+  });
+});
+
+// --- overlay targets -------------------------------------------------------
+
+describe("contribution overlays", () => {
+  it("each overlay declares a target and fragment anchors", () => {
+    const targets = OVERLAY_FILES.map((f) => readFrontmatter(f).fm);
+    const targetNames = targets.map((t) => t.target).sort();
+    expect(targetNames).toEqual(["build-and-test", "solution-design"]);
+    for (const t of targets) {
+      expect(Array.isArray(t.fragments)).toBe(true);
+      expect(t.fragments.length).toBeGreaterThan(0);
+      for (const frag of t.fragments) expect(typeof frag.anchor).toBe("string");
+    }
+  });
+});
+
+// --- agent stem matches frontmatter name -----------------------------------
+
+describe("agent", () => {
+  it("file stem matches frontmatter name", () => {
+    const { fm } = readFrontmatter(AGENT_FILE);
+    const stem = basename(AGENT_FILE, extname(AGENT_FILE));
+    expect(fm.name).toBe(stem);
+    expect(fm.plugin).toBe("aws-blocks");
+    expect(fm.tier).toBe("judgment");
+  });
+
+  it("knowledge directory matches the agent name and holds both docs", () => {
+    const { fm } = readFrontmatter(AGENT_FILE);
+    const kdir = `knowledge/${fm.name}`;
+    for (const doc of ["blocks-catalog.md", "local-to-cloud-mapping.md"]) {
+      expect(existsSync(resolve(ROOT, kdir, doc))).toBe(true);
+    }
+  });
+});
+
+// --- sensor manifest references an existing tool script --------------------
+
+describe("sensor", () => {
+  it("declares id/trigger/stages and points at an existing tool script", () => {
+    const { fm } = readFrontmatter(SENSOR_FILE);
+    expect(fm.id).toBe("blocks-local-health");
+    expect(fm.trigger).toBe("stage-entry");
+    expect(Array.isArray(fm.stages)).toBe(true);
+    expect(fm.stages).toContain("blocks-local-dev");
+    expect(typeof fm.tool).toBe("string");
+    expect(existsSync(resolve(ROOT, "tools", fm.tool))).toBe(true);
+  });
+
+  it("stages listed by the sensor are real stage slugs or the core build-and-test target", () => {
+    const { fm } = readFrontmatter(SENSOR_FILE);
+    const known = new Set([
+      "blocks-local-dev",
+      "blocks-sandbox-deploy",
+      "blocks-production-deploy",
+      "build-and-test",
+    ]);
+    for (const st of fm.stages) expect(known.has(st)).toBe(true);
+  });
+});
+
+// --- tools present ---------------------------------------------------------
+
+describe("tools", () => {
+  it("both declared tool scripts exist", () => {
+    for (const t of ["aidlc-blocks-local-health.ts", "aws-blocks-doctor.ts"]) {
+      expect(existsSync(resolve(ROOT, "tools", t))).toBe(true);
+    }
+  });
+
+  it("no unexpected .md files without frontmatter in content dirs", () => {
+    const contentDirs = ["stages", "contributions", "scopes", "sensors", "agents"];
+    for (const d of contentDirs) {
+      for (const f of walk(d, ".md")) {
+        const text = readFileSync(resolve(ROOT, f), "utf-8");
+        expect(text.startsWith("---\n")).toBe(true);
+      }
+    }
+  });
+});

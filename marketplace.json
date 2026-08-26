@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    {
+      "name": "aws-blocks",
+      "description": "AWS Blocks local-first development for AI-DLC workflows. Scaffold, develop, and test locally before deploying to AWS.",
+      "repository": "https://github.com/j-thurston/aidlc-plugin-aws-blocks",
+      "tags": ["aws", "blocks", "local-dev", "typescript", "fullstack"]
+    }
+  ]
+}

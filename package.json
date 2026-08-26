@@ -1,0 +1,20 @@
+{
+  "name": "aidlc-plugin-aws-blocks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS Blocks local-first development plugin for AI-DLC workflows.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "doctor": "bun run tools/aws-blocks-doctor.ts",
+    "health": "bun run tools/aidlc-blocks-local-health.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "bun-types": "^1.1.0",
+    "typescript": "^5.4.0",
+    "yaml": "^2.4.0"
+  }
+}

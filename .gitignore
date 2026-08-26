@@ -1,0 +1,8 @@
+node_modules/
+.bb-data/
+.DS_Store
+*.log
+dist/
+.kiro/
+Build Plan - AWS Blocks Plugin.md
+AWS Blocks Plugin Sketch.md
