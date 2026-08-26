@@ -34,7 +34,7 @@ const STAGE_FILES = [
   "stages/operation/blocks-production-deploy.md",
 ];
 const OVERLAY_FILES = [
-  "contributions/inception/solution-design.md",
+  "contributions/inception/domain-design.md",
   "contributions/construction/build-and-test.md",
 ];
 const SCOPE_FILE = "scopes/aws-blocks-fullstack.md";
@@ -107,9 +107,15 @@ describe("stage graph consistency", () => {
     }
   });
 
-  it("consumed aws-blocks artifacts are produced by an earlier stage", () => {
+  it("consumed aws-blocks artifacts are produced somewhere in the plugin", () => {
+    // Producers include both stage `produces` and overlay `adds.produces`
+    // (an overlay adds an artifact to the core stage it targets).
     const produced = new Set<string>();
     for (const s of stages) for (const p of s.produces ?? []) produced.add(p);
+    for (const f of OVERLAY_FILES) {
+      const { fm } = readFrontmatter(f);
+      for (const p of fm.adds?.produces ?? []) produced.add(p);
+    }
     for (const s of stages) {
       for (const c of s.consumes ?? []) {
         if (typeof c.artifact === "string" && c.artifact.startsWith("aws-blocks-")) {
@@ -140,15 +146,52 @@ describe("scope", () => {
 
 // --- overlay targets -------------------------------------------------------
 
+// Real core stage slugs on the awslabs/aidlc-workflows v2 branch
+// (core/aidlc-common/stages/**). An overlay whose `target` is not one of these
+// is silently dropped at compose time — this set catches that at test time.
+const CORE_STAGE_SLUGS = new Set([
+  "state-init", "workspace-detection", "workspace-scaffold",
+  "approval-handoff", "feasibility", "intent-capture", "market-research",
+  "rough-mockups", "scope-definition", "team-formation",
+  "contract-design", "delivery-planning", "domain-design",
+  "practices-discovery", "refined-mockups", "requirements-analysis",
+  "reverse-engineering", "units-generation", "user-stories",
+  "build-and-test", "ci-pipeline", "code-generation", "functional-design",
+  "infrastructure-design", "nfr-design", "nfr-requirements",
+  "deployment-execution", "deployment-pipeline", "environment-provisioning",
+  "feedback-optimization", "incident-response", "observability-setup",
+  "performance-validation",
+]);
+
+// Fragment anchors the compose hook actually implements (v2 §6).
+// `after-questions` is parsed-but-not-implemented (drop-logged) — excluded.
+const IMPLEMENTED_ANCHOR = /^(after-step:\d+|before-step:\d+|end-of-steps|in:.+)$/;
+
 describe("contribution overlays", () => {
   it("each overlay declares a target and fragment anchors", () => {
     const targets = OVERLAY_FILES.map((f) => readFrontmatter(f).fm);
     const targetNames = targets.map((t) => t.target).sort();
-    expect(targetNames).toEqual(["build-and-test", "solution-design"]);
+    expect(targetNames).toEqual(["build-and-test", "domain-design"]);
     for (const t of targets) {
       expect(Array.isArray(t.fragments)).toBe(true);
       expect(t.fragments.length).toBeGreaterThan(0);
       for (const frag of t.fragments) expect(typeof frag.anchor).toBe("string");
+    }
+  });
+
+  it("every overlay targets a real core stage slug", () => {
+    for (const f of OVERLAY_FILES) {
+      const { fm } = readFrontmatter(f);
+      expect(CORE_STAGE_SLUGS.has(fm.target)).toBe(true);
+    }
+  });
+
+  it("every fragment anchor uses an implemented anchor form", () => {
+    for (const f of OVERLAY_FILES) {
+      const { fm } = readFrontmatter(f);
+      for (const frag of fm.fragments) {
+        expect(frag.anchor).toMatch(IMPLEMENTED_ANCHOR);
+      }
     }
   });
 });

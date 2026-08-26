@@ -1,5 +1,5 @@
 ---
-target: solution-design
+target: domain-design
 plugin: aws-blocks
 adds:
   produces:
@@ -7,15 +7,15 @@ adds:
   required_sections:
     - "Block Architecture"
 fragments:
-  - anchor: after-step:3
+  - anchor: after-step:4
     order: 100
 ---
 
-## fragment: after-step:3
+## fragment: after-step:4
 
-### Step 3a (aws-blocks): Block Architecture Selection
+### Step 4a (aws-blocks): Block Architecture Selection
 
-Before finalizing the architecture, map each system capability to an AWS Block:
+Having catalogued the components, map each system capability to an AWS Block:
 
 | Capability | Block | Local Implementation | Production Service |
 |-----------|-------|---------------------|-------------------|

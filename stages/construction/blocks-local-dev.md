@@ -11,9 +11,11 @@ produces:
   - aws-blocks-local-app
   - aws-blocks-ifc-layer
 consumes:
-  - artifact: solution-design
+  - artifact: aws-blocks-block-selection
     required: true
-  - artifact: user-stories
+  - artifact: components
+    required: true
+  - artifact: stories
     required: false
 sensors:
   - blocks-local-health
@@ -44,8 +46,9 @@ If it exists, verify `package.json` has `@aws-blocks/blocks` and run
 
 ### Step 2: Design the IFC layer from solution artifacts
 
-Read the `solution-design` artifact (enriched by this plugin's Block
-Architecture Selection contribution). Map each capability to a Block:
+Read the `aws-blocks-block-selection` artifact (produced by this plugin's Block
+Architecture Selection contribution to the Domain Design stage) alongside the
+Component Catalogue (`components`). Map each capability to a Block:
 
 - Data persistence → `Database` or `KVStore`
 - User management → `AuthBasic` or `AuthSocial`

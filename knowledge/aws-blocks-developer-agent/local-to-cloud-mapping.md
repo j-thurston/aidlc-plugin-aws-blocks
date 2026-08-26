@@ -83,8 +83,8 @@ Guidance:
 When the app needs a resource with no Block, drop to the CDK layer:
 
 - Author it in `aws-blocks/index.cdk.ts`
-- Document it in the Solution Design **CDK Extensions** subsection (the plugin's
-  `solution-design` contribution requires this)
+- Document it in the Domain Design **CDK Extensions** subsection (the plugin's
+  `domain-design` contribution requires this)
 - Prefer a Block whenever one exists — the escape hatch forfeits the local-first
   guarantee (custom CDK resources have no local implementation and must be
   tested in the sandbox).

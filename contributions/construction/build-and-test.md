@@ -7,13 +7,13 @@ adds:
   produces:
     - aws-blocks-test-results
 fragments:
-  - anchor: after-step:8
+  - anchor: after-step:9
     order: 100
 ---
 
-## fragment: after-step:8
+## fragment: after-step:9
 
-### Step 8a (aws-blocks): Local integration verification
+### Step 9a (aws-blocks): Local integration verification
 
 Before marking build-and-test complete, verify the local Blocks environment:
 

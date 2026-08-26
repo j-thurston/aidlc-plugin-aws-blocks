@@ -7,7 +7,7 @@ your machine — no AWS account — then promote the *same code* to an ephemeral
 sandbox and finally to production, each behind a human acceptance gate.
 
 The plugin adds three stages, a Blocks-aware developer agent, a scope, a health
-sensor, and two contribution overlays that enrich the core Solution Design and
+sensor, and two contribution overlays that enrich the core Domain Design and
 Build-and-Test stages. It contributes to any harness (Claude Code, Kiro,
 Codex, Cursor) via the AI-DLC
 [plugin mechanism](https://awslabs.github.io/aidlc-workflows/reference/18-plugin-mechanism/)
@@ -30,7 +30,7 @@ Run `/aidlc --doctor` after installing to confirm the `aws-blocks` checks pass.
 | Stage (construction) | `blocks-local-dev` | Scaffold + iterate locally with `npm run dev` |
 | Stage (operation) | `blocks-sandbox-deploy` | Ephemeral AWS deploy to test against real services |
 | Stage (operation) | `blocks-production-deploy` | Gated production deployment |
-| Overlay | `solution-design` | Adds Block Architecture Selection to the core Design stage |
+| Overlay | `domain-design` | Adds Block Architecture Selection to the core Domain Design stage |
 | Overlay | `build-and-test` | Adds local integration verification to the core Build-and-Test stage |
 | Agent | `aws-blocks-developer-agent` | Blocks-expert developer persona (`tier: judgment`) |
 | Knowledge | `blocks-catalog.md`, `local-to-cloud-mapping.md` | Block reference + local/cloud behavior |
@@ -40,7 +40,7 @@ Run `/aidlc --doctor` after installing to confirm the `aws-blocks` checks pass.
 ## Stage flow
 
 ```text
-Inception ── Solution Design ──(overlay: Block Architecture Selection)
+Inception ── Domain Design ──(overlay: Block Architecture Selection)
                     │
 Construction ── blocks-local-dev ──(sensor: blocks-local-health)
                     │                 Build-and-Test ──(overlay: local integration verify)
@@ -91,7 +91,7 @@ Select the scope to put the Blocks stages on-path:
 The workflow then routes through Block selection (during Design), local
 development, sandbox testing, and production deployment. Because the scope is
 opt-in (`freeform_default: false`), projects that don't use Blocks see no
-change. With the plugin enabled, the Solution Design overlay surfaces Block
+change. With the plugin enabled, the Domain Design overlay surfaces Block
 selection even on non-Blocks scopes.
 
 ## Development
@@ -116,7 +116,7 @@ tool reference — so a rename or a broken cross-reference fails CI.
 - Block API details live in the `@aws-blocks/blocks` package steering files;
   the knowledge docs here summarize and reference them rather than duplicating.
 - Prefer a Block over a raw CDK escape hatch; document any escape hatch in the
-  Solution Design **CDK Extensions** subsection.
+  Domain Design **CDK Extensions** subsection.
 
 ## License
 

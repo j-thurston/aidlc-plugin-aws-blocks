@@ -26,6 +26,6 @@ This scope puts the following stages on-path:
 - **blocks-production-deploy** (Operation): final production deployment
 
 The scope also activates the plugin's contribution overlays on the core
-`solution-design` (Inception) and `build-and-test` (Construction) stages, so
+`domain-design` (Inception) and `build-and-test` (Construction) stages, so
 Block-architecture thinking and local integration verification happen inline
 with the standard workflow.
