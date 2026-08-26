@@ -4,11 +4,15 @@ name: Production Deployment (AWS Blocks)
 plugin: aws-blocks
 phase: operation
 execution: CONDITIONAL
-condition: Execute when the aws-blocks-fullstack scope is active and the sandbox-validated app is approved for promotion to production.
+condition: Execute when the sandbox-validated AWS Blocks app is approved for promotion to production.
 lead_agent: aws-blocks-developer-agent
 mode: inline
 scopes:
-  - aws-blocks-fullstack
+  - enterprise
+  - feature
+  - infra
+  - classic
+  - workshop
 requires_stage:
   - aws-blocks-sandbox-deploy
 produces:

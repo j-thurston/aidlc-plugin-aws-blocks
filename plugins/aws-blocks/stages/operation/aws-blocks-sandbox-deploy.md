@@ -4,11 +4,15 @@ name: Sandbox Deployment (AWS Blocks)
 plugin: aws-blocks
 phase: operation
 execution: CONDITIONAL
-condition: Execute when the aws-blocks-fullstack scope is active and the developer chooses to validate the local app against real AWS services before production.
+condition: Execute when the AWS Blocks local app is validated and the team wants to verify it against real AWS services in an ephemeral sandbox before production.
 lead_agent: aws-blocks-developer-agent
 mode: inline
 scopes:
-  - aws-blocks-fullstack
+  - enterprise
+  - feature
+  - infra
+  - classic
+  - workshop
 requires_stage:
   - aws-blocks-local-dev
 produces:

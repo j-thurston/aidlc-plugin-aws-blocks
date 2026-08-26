@@ -15,7 +15,9 @@ fragments:
 
 ### Step 4a (aws-blocks): Block Architecture Selection
 
-Having catalogued the components, map each system capability to an AWS Block:
+If this system will deploy to AWS, map each catalogued component to the AWS Block
+that emulates its service locally — this selection lets the `aws-blocks-local-dev`
+stage build a like-for-like local environment before the AWS deploy:
 
 | Capability | Block | Local Implementation | Production Service |
 |-----------|-------|---------------------|-------------------|

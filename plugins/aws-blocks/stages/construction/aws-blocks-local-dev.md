@@ -3,26 +3,32 @@ slug: aws-blocks-local-dev
 name: Local Development (AWS Blocks)
 plugin: aws-blocks
 phase: construction
-execution: ALWAYS
-condition: Always runs under the aws-blocks-fullstack scope — scaffold and iterate the app locally with AWS Blocks before any cloud deploy.
+execution: CONDITIONAL
+condition: Execute when the deployment target is AWS (the infrastructure specification names AWS services) and the team wants to validate against Block-emulated AWS services locally before deploying. Skip when the target is not AWS.
 lead_agent: aws-blocks-developer-agent
 mode: inline
 scopes:
-  - aws-blocks-fullstack
+  - enterprise
+  - feature
+  - infra
+  - classic
+  - workshop
 produces:
   - aws-blocks-local-app
   - aws-blocks-ifc-layer
 consumes:
-  - artifact: aws-blocks-block-selection
+  - artifact: infrastructure-specification
     required: true
   - artifact: components
     required: true
-  - artifact: stories
+  - artifact: functional-spec
     required: false
+requires_stage:
+  - infrastructure-design
 sensors:
   - blocks-local-health
-inputs: aws-blocks-block-selection.md (from the Domain Design overlay), domain-design components.md, user-stories stories.md (if produced)
-outputs: aws-blocks/index.ts (the IFC layer) and a running local app verified via npm run dev (under this stage's record dir, engine-resolved)
+inputs: infrastructure-design infrastructure-specification.md (establishes the AWS target), domain-design components.md, functional-design functional-spec.md (if produced)
+outputs: aws-blocks/index.ts (the IFC layer that emulates the AWS services locally) and a running local app verified via npm run dev (under this stage's record dir, engine-resolved)
 ---
 
 ## Purpose
@@ -48,23 +54,28 @@ npm create @aws-blocks/blocks-app@latest .
 If it exists, verify `package.json` has `@aws-blocks/blocks` and run
 `npm install`.
 
-### Step 2: Design the IFC layer from solution artifacts
+### Step 2: Map the AWS services to Blocks
 
-Read the `aws-blocks-block-selection` artifact (produced by this plugin's Block
-Architecture Selection contribution to the Domain Design stage) alongside the
-Component Catalogue (`components`). Map each capability to a Block:
+Read the `infrastructure-specification` artifact — it names the AWS services this
+app will deploy to — alongside the Component Catalogue (`components`). Each AWS
+service maps to the Block that emulates it locally, so the local app exercises a
+like-for-like environment before the AWS deploy:
 
-- Data persistence → `Database` or `KVStore`
-- User management → `AuthBasic` or `AuthSocial`
-- File handling → `FileBucket`
-- Background work → `AsyncJob` / `CronJob`
-- AI/agents → `Agent` + `KnowledgeBase`
-- Realtime → `Realtime`
-- Email → `EmailClient`
+- Aurora / RDS → `Database` (PGlite locally)
+- DynamoDB → `KVStore`
+- Cognito → `AuthBasic` / `AuthSocial`
+- S3 → `FileBucket`
+- Lambda + SQS → `AsyncJob`; EventBridge + Lambda → `CronJob`
+- API Gateway WebSocket → `Realtime`
+- Bedrock → `Agent`; Bedrock Knowledge Bases → `KnowledgeBase`
+- SES → `EmailClient`
+- CloudWatch → `Logger` / `Metrics` / `Tracer`
 
-Write `aws-blocks/index.ts` with the selected Blocks composed in a single
-Scope. Consult the `blocks-catalog` knowledge file for constructor signatures
-and the `local-to-cloud-mapping` knowledge file for behavioral differences.
+Consult the `blocks-catalog` knowledge file for constructor signatures and
+`local-to-cloud-mapping` for the behavioral differences between each Block's
+local emulation and its production AWS service.
+
+Write `aws-blocks/index.ts` with the selected Blocks composed in a single Scope.
 
 ### Step 3: Implement API methods
 

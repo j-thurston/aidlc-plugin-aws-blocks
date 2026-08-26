@@ -37,7 +37,6 @@ const OVERLAY_FILES = [
   "contributions/inception/domain-design.md",
   "contributions/construction/build-and-test.md",
 ];
-const SCOPE_FILE = "scopes/aws-blocks-fullstack.md";
 const AGENT_FILE = "agents/aws-blocks-developer-agent.md";
 const SENSOR_FILE = "sensors/aidlc-blocks-local-health.md";
 
@@ -51,9 +50,11 @@ describe("manifest", () => {
     expect(Array.isArray(m.dependencies)).toBe(true);
     expect(m.dependencies).toContain("core");
     expect(m.aidlc?.contributes).toBeDefined();
-    for (const key of ["stages", "agents", "scopes", "sensors", "knowledge", "tools", "overlays"]) {
+    for (const key of ["stages", "agents", "sensors", "knowledge", "tools", "overlays"]) {
       expect(typeof m.aidlc.contributes[key]).toBe("string");
     }
+    // scopes are no longer shipped by this plugin
+    expect(m.aidlc.contributes.scopes).toBeUndefined();
   });
 
   it("marketplace.json is valid JSON listing the plugin", () => {
@@ -66,7 +67,7 @@ describe("manifest", () => {
 // --- frontmatter validity --------------------------------------------------
 
 describe("frontmatter validity", () => {
-  const all = [...STAGE_FILES, ...OVERLAY_FILES, SCOPE_FILE, AGENT_FILE, SENSOR_FILE];
+  const all = [...STAGE_FILES, ...OVERLAY_FILES, AGENT_FILE, SENSOR_FILE];
   for (const f of all) {
     it(`${f} has parseable YAML frontmatter`, () => {
       const { fm } = readFrontmatter(f);
@@ -141,21 +142,11 @@ describe("stage graph consistency", () => {
     }
   });
 
-  it("every stage carries the aws-blocks-fullstack scope", () => {
+  it("every stage carries at least one real core scope", () => {
     for (const s of stages) {
-      expect(s.scopes ?? []).toContain("aws-blocks-fullstack");
-    }
-  });
-});
-
-// --- scope references valid stage slugs ------------------------------------
-
-describe("scope", () => {
-  it("scope routing text names the real stage slugs", () => {
-    const { fm, body } = readFrontmatter(SCOPE_FILE);
-    expect(fm.name).toBe("aws-blocks-fullstack");
-    for (const slug of ["aws-blocks-local-dev", "aws-blocks-sandbox-deploy", "aws-blocks-production-deploy"]) {
-      expect(body).toContain(slug);
+      const scopes = s.scopes ?? [];
+      expect(scopes.length).toBeGreaterThan(0);
+      for (const sc of scopes) expect(CORE_SCOPE_NAMES.has(sc)).toBe(true);
     }
   });
 });
@@ -177,6 +168,13 @@ const CORE_STAGE_SLUGS = new Set([
   "deployment-execution", "deployment-pipeline", "environment-provisioning",
   "feedback-optimization", "incident-response", "observability-setup",
   "performance-validation",
+]);
+
+// Real core scope names on the v2 branch (core/scopes/aidlc-*.md). A stage's
+// scopes: must reference one of these to route.
+const CORE_SCOPE_NAMES = new Set([
+  "mvp", "enterprise", "feature", "poc", "bugfix", "refactor",
+  "security-patch", "infra", "express", "classic", "workshop",
 ]);
 
 // Fragment anchors the compose hook actually implements (v2 §6).
@@ -270,7 +268,7 @@ describe("tools", () => {
   });
 
   it("no unexpected .md files without frontmatter in content dirs", () => {
-    const contentDirs = ["stages", "contributions", "scopes", "sensors", "agents"];
+    const contentDirs = ["stages", "contributions", "sensors", "agents"];
     for (const d of contentDirs) {
       for (const f of walk(d, ".md")) {
         const text = readFileSync(resolve(ROOT, f), "utf-8");

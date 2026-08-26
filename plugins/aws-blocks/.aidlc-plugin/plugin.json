@@ -8,7 +8,6 @@
     "contributes": {
       "stages": "stages/",
       "agents": "agents/",
-      "scopes": "scopes/",
       "sensors": "sensors/",
       "knowledge": "knowledge/",
       "tools": "tools/",
