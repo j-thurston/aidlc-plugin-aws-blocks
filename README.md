@@ -47,7 +47,7 @@ Run `/aidlc --doctor` after installing to confirm the `aws-blocks` checks pass.
 ## How it activates
 
 The stages carry no dedicated scope. They ride the common scopes that reach
-infrastructure and deployment (`enterprise`, `feature`, `infra`, `classic`,
+infrastructure and deployment (`enterprise`, `feature`, `mvp`, `poc`, `infra`, `classic`,
 `workshop`) and are `CONDITIONAL`: `aws-blocks-local-dev` runs only when the
 `infrastructure-specification` names AWS services — i.e. the app is AWS-bound.
 `requires_stage: infrastructure-design` places it after the target is known, so

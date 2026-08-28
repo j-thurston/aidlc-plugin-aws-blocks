@@ -10,6 +10,8 @@ mode: inline
 scopes:
   - enterprise
   - feature
+  - mvp
+  - poc
   - infra
   - classic
   - workshop
